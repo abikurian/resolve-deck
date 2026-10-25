@@ -19,13 +19,12 @@ app = FastAPI()
 sct = mss.mss()
 
 def get_scope_frame():
-    # sct.monitors[0] is a virtual canvas of all screens. 
-    # [1] is primary, [2] is secondary.
-    monitor_idx = 2 if len(sct.monitors) > 2 else 1
-    monitor = sct.monitors[monitor_idx]
-    img = np.array(sct.grab(monitor))
+    # Default placeholder coordinates for the viewer
+    capture_bbox = {"top": 150, "left": 960, "width": 960, "height": 540} 
+    img = np.array(sct.grab(capture_bbox))
     frame = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
-    # Resize the 1080p/4K feed down to a mobile-friendly width to maintain high FPS and low latency
+
+    # Compress and stream
     frame = cv2.resize(frame, (854, 480))
     _, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
     return jpeg.tobytes()
