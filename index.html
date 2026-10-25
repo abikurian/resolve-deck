@@ -183,6 +183,12 @@
         <img id="stream-img" src="/stream" alt="Resolve Preview / Scopes" style="width: 100%; height: 100%; object-fit: contain;">
     </div>
 
+    <!-- Page Navigation Row -->
+    <div class="page-nav" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px 15px 0 15px;">
+        <button class="key key-dark" style="min-height: 48px; font-size: 12px; font-weight: 800;" onclick="sendAction('page_edit')">EDIT PAGE</button>
+        <button class="key key-dark" style="min-height: 48px; font-size: 12px; font-weight: 800;" onclick="sendAction('page_color')">COLOR PAGE</button>
+    </div>
+
     <!-- Advanced Custom Deck -->
     <div id="custom-deck" style="display: flex; flex-direction: column; gap: 15px; padding: 15px;">
         <!-- Row 1: Nodes & View -->

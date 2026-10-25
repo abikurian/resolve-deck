@@ -11,6 +11,13 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 # Disable PyAutoGUI delay for instantaneous jog wheel responsiveness
 pyautogui.PAUSE = 0.0
 
+# Multi-Page Interface State ("edit" or "color")
+current_page = "edit"
+
+# Calibrated screen capture regions for Edit and Color pages
+bbox_edit = {"top": 121, "left": 1141, "width": 264, "height": 338}
+bbox_color = {"top": 121, "left": 1141, "width": 264, "height": 338}
+
 app = FastAPI()
 
 # -------------------------------------------------------------
@@ -19,8 +26,8 @@ app = FastAPI()
 sct = mss.mss()
 
 def get_scope_frame():
-    # Default placeholder coordinates for the viewer
-    capture_bbox = {"top": 150, "left": 960, "width": 960, "height": 540} 
+    global current_page
+    capture_bbox = bbox_edit if current_page == "edit" else bbox_color
     img = np.array(sct.grab(capture_bbox))
     frame = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
 
@@ -46,6 +53,7 @@ def video_feed():
 # -------------------------------------------------------------
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    global current_page
     await websocket.accept()
     print("Phone controller connected.")
     try:
@@ -109,6 +117,15 @@ async def websocket_endpoint(websocket: WebSocket):
 
             elif action == "bypass_color":
                 pyautogui.hotkey("shift", "d")
+
+            # --- WORKSPACE PAGE SWITCHING ---
+            elif action == "page_edit":
+                pyautogui.hotkey("shift", "4")
+                current_page = "edit"
+
+            elif action == "page_color":
+                pyautogui.hotkey("shift", "6")
+                current_page = "color"
 
     except WebSocketDisconnect:
         print("Phone controller disconnected.")
