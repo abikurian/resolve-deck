@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DaVinci Resolve Speed Editor</title>
+    <title>DaVinci Resolve Deck</title>
     <style>
         * {
             box-sizing: border-box;
@@ -74,48 +74,16 @@
             object-fit: contain;
         }
 
-        /* Speed Editor Hardware Board */
-        #speed-editor-board {
+        /* Custom Deck Hybrid Container */
+        #custom-deck {
             flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 20px;
-            padding: 20px;
+            padding: 15px;
             overflow-y: auto;
             background: radial-gradient(circle at 50% 20%, #52545c 0%, #44464c 100%);
             box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Sub-grids */
-        .board-col {
-            display: grid;
-            gap: 10px;
-            align-content: start;
-        }
-
-        .grid-3col {
-            grid-template-columns: repeat(3, 1fr);
-        }
-
-        .col-right {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .row-2col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .row-3col {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            width: 100%;
         }
 
         /* Mechanical Tactile Keycap Design */
@@ -132,11 +100,11 @@
             text-transform: uppercase;
             cursor: pointer;
             transition: transform 0.05s, box-shadow 0.05s;
-            padding: 8px;
+            padding: 8px 4px;
             min-height: 44px;
             border: 1px solid rgba(255, 255, 255, 0.05);
             outline: none;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.3px;
             line-height: 1.2;
         }
 
@@ -176,22 +144,7 @@
             box-shadow: 0 0 0 #581618, 0 1px 3px rgba(0, 0, 0, 0.5);
         }
 
-        /* Key Sizing Utilities */
-        .key-large {
-            min-height: 60px;
-            font-size: 13px;
-        }
-
-        /* Right Column Wheel Mount */
-        .wheel-mount {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 0;
-            width: 100%;
-        }
-
+        /* Blackmagic Jog Wheel */
         #jog-wheel {
             width: 140px;
             height: 140px;
@@ -224,11 +177,49 @@
             pointer-events: none;
         }
 
-        @media (max-width: 768px) {
-            #speed-editor-board {
-                grid-template-columns: 1fr;
-                gap: 20px;
-                padding: 14px;
+        /* 3-Way Color Wheels */
+        .wheel-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .wheel-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #9ca3af;
+            letter-spacing: 0.5px;
+        }
+
+        .color-pad {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #222731 0%, #12141a 100%);
+            border: 3px solid #282d37;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(0, 0, 0, 0.6);
+            position: relative;
+            touch-action: none;
+        }
+
+        .puck {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        @media (max-width: 600px) {
+            .key {
+                font-size: 9px;
             }
         }
     </style>
@@ -237,7 +228,7 @@
 <body>
 
     <header>
-        <span class="header-title">DaVinci Resolve Speed Editor</span>
+        <span class="header-title">DaVinci Resolve Deck</span>
         <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 10px; color: #9ca3af; text-transform: uppercase; font-weight: 700;">Deck</span>
             <span id="dot" class="status-dot"></span>
@@ -249,65 +240,48 @@
         <img id="stream-img" src="/stream" alt="Resolve Preview / Scopes">
     </div>
 
-    <!-- Speed Editor Chassis -->
-    <div id="speed-editor-board">
-        <!-- Left Column: Edit Actions -->
-        <div class="board-col grid-3col">
-            <button class="key key-dark">SMART INSRT</button>
-            <button class="key key-dark">APPND</button>
-            <button class="key key-dark">RIPL OWR</button>
-
-            <button class="key key-dark">CLOSE UP</button>
-            <button class="key key-dark">PLACE ON TOP</button>
-            <button class="key key-dark">SRC OVERWR</button>
-
-            <button class="key key-dark" onclick="sendAction('add_serial')">SERIAL</button>
-            <button class="key key-dark" onclick="sendAction('add_parallel')">PARALLEL</button>
-            <button class="key key-red" onclick="sendAction('cut')">SPLIT</button>
-
-            <button class="key key-dark">TRIM IN</button>
-            <button class="key key-dark">TRIM OUT</button>
-            <button class="key key-dark">ROLL</button>
-
-            <button class="key key-white key-large" style="grid-column: span 1;">IN</button>
-            <button class="key key-white key-large" style="grid-column: span 2;">OUT</button>
-        </div>
-
-        <!-- Middle Column: Transport & Cams -->
-        <div class="board-col grid-3col">
-            <button class="key key-dark">ESC</button>
-            <button class="key key-dark">SYNC BIN</button>
-            <button class="key key-dark">TRANS</button>
-
-            <button class="key key-dark">CAM 1</button>
-            <button class="key key-dark">CAM 2</button>
-            <button class="key key-dark">CAM 3</button>
-
-            <button class="key key-dark">CAM 4</button>
-            <button class="key key-dark">CAM 5</button>
-            <button class="key key-dark">CAM 6</button>
-
+    <!-- Hybrid Custom Deck -->
+    <div id="custom-deck" style="display: flex; flex-direction: column; gap: 20px; padding: 15px;">
+        <!-- Top Row: Action Keys -->
+        <div class="action-row" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
             <button class="key key-dark" onclick="sendAction('undo')">UNDO</button>
             <button class="key key-dark" onclick="sendAction('redo')">REDO</button>
-            <button class="key key-dark">AUDIO LEVEL</button>
-
-            <button class="key key-dark" style="grid-column: span 3; min-height: 52px; font-size: 12px; font-weight: 800; background: #2b2e33;" onclick="sendAction('play_pause')">STOP / PLAY</button>
+            <button class="key key-dark" onclick="sendAction('add_serial')">SERIAL NODE</button>
+            <button class="key key-dark" onclick="sendAction('add_parallel')">PARL NODE</button>
+            <button class="key key-red" onclick="sendAction('cut')">SPLIT</button>
         </div>
 
-        <!-- Right Column: Wheel & Modes -->
-        <div class="col-right">
-            <div class="row-2col">
-                <button class="key key-dark">SOURCE</button>
-                <button class="key key-dark">TIMELINE</button>
-            </div>
-            <div class="row-3col">
-                <button class="key key-white">SHTL</button>
-                <button class="key key-white">JOG</button>
-                <button class="key key-white">SCRL</button>
-            </div>
-            <div class="wheel-mount">
+        <!-- Bottom Section: Wheels & Transport -->
+        <div class="wheels-row" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; align-items: center;">
+            <!-- Jog Wheel & Play -->
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
                 <div id="jog-wheel">
                     <div id="jog-indicator"></div>
+                </div>
+                <button class="key key-dark" style="min-width: 140px; min-height: 48px; font-size: 11px; font-weight: 800;" onclick="sendAction('play_pause')">PLAY / STOP</button>
+            </div>
+
+            <!-- Color Wheels (Lift, Gamma, Gain) -->
+            <div style="display: flex; gap: 16px; align-items: center; justify-content: center; flex-wrap: wrap;">
+                <div class="wheel-card" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                    <span class="wheel-label">Lift</span>
+                    <div class="color-pad" id="wheel-lift">
+                        <div class="puck" id="puck-lift"></div>
+                    </div>
+                </div>
+
+                <div class="wheel-card" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                    <span class="wheel-label">Gamma</span>
+                    <div class="color-pad" id="wheel-gamma">
+                        <div class="puck" id="puck-gamma"></div>
+                    </div>
+                </div>
+
+                <div class="wheel-card" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                    <span class="wheel-label">Gain</span>
+                    <div class="color-pad" id="wheel-gain">
+                        <div class="puck" id="puck-gain"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -382,6 +356,45 @@
         });
 
         jog.addEventListener("touchend", () => { prevAngle = null; });
+
+        // -------------------------------------------------------------
+        // COLOR WHEEL PUCK TRACKING
+        // -------------------------------------------------------------
+        ["lift", "gamma", "gain"].forEach(name => {
+            const pad = document.getElementById(`wheel-${name}`);
+            const puck = document.getElementById(`puck-${name}`);
+            if (!pad || !puck) return;
+
+            pad.addEventListener("touchmove", (e) => {
+                const touch = e.touches[0];
+                const rect = pad.getBoundingClientRect();
+                const r = rect.width / 2;
+                const dx = touch.clientX - (rect.left + r);
+                const dy = touch.clientY - (rect.top + r);
+
+                // Clamping to circular radius
+                const dist = Math.min(Math.sqrt(dx * dx + dy * dy), r);
+                const angle = Math.atan2(dy, dx);
+                const clampX = Math.cos(angle) * dist;
+                const clampY = Math.sin(angle) * dist;
+
+                puck.style.transform = `translate(calc(-50% + ${clampX}px), calc(-50% + ${clampY}px))`;
+
+                // Send normalized vector (-1.0 to 1.0)
+                send({
+                    action: "color",
+                    wheel: name,
+                    dx: clampX / r,
+                    dy: clampY / r
+                });
+            });
+
+            pad.addEventListener("touchend", () => {
+                // Return puck to dead center
+                puck.style.transform = `translate(-50%, -50%)`;
+                send({ action: "color", wheel: name, dx: 0, dy: 0 });
+            });
+        });
     </script>
 </body>
 
