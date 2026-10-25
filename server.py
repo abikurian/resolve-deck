@@ -22,6 +22,9 @@ color_targets = {
     "gain": (1220, 850),
 }
 
+# Multi-Page Interface State ("color" or "edit")
+active_page = "color"
+
 app = FastAPI()
 
 # -------------------------------------------------------------
@@ -32,39 +35,18 @@ app = FastAPI()
 sct = mss.mss()
 
 def get_scope_frame():
-    # Grab primary monitor or defined region
-    # Format: {"top": 100, "left": 100, "width": 800, "height": 600}
-    monitor = sct.monitors[1]
-    
-    # Target top-center (common viewer/scope placement)
-    w = monitor["width"] // 2
-    h = monitor["height"] // 2
-    capture_bbox = {"top": 60, "left": w // 2, "width": w, "height": h}
+    global active_page
+    # Dynamically swap capture region based on active page
+    if active_page == "color":
+        capture_bbox = {"top": 150, "left": 1200, "width": 720, "height": 405}
+    else:  # edit
+        capture_bbox = {"top": 100, "left": 960, "width": 960, "height": 540}
     
     img = np.array(sct.grab(capture_bbox))
     frame = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
     
-    # Generate on-the-fly RGB Histogram HUD overlaid at the bottom
-    h_h, h_w = 120, frame.shape[1]
-    hist_canvas = np.zeros((h_h, h_w, 3), dtype=np.uint8)
-    colors = ( (255, 0, 0), (0, 255, 0), (0, 0, 255) ) # B, G, R
-    
-    for i, col in enumerate(colors):
-        hist = cv2.calcHist([frame], [i], None, [256], [0, 256])
-        cv2.normalize(hist, hist, 0, h_h - 10, cv2.NORM_MINMAX)
-        pts = []
-        for x_idx, val in enumerate(hist):
-            px = int(x_idx * (h_w / 256.0))
-            py = int(h_h - val[0])
-            pts.append([px, py])
-        pts = np.array(pts, np.int32).reshape((-1, 1, 2))
-        cv2.polylines(hist_canvas, [pts], False, col, 2)
-        
-    # Combine preview image and generated scope
-    combined = np.vstack((cv2.resize(frame, (h_w, 240)), hist_canvas))
-    
-    # Compress as lightweight JPEG for rapid streaming
-    _, jpeg = cv2.imencode('.jpg', combined, [cv2.IMWRITE_JPEG_QUALITY, 60])
+    # Compress as JPEG for rapid streaming
+    _, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
     return jpeg.tobytes()
 
 def generate_video_stream():
@@ -84,6 +66,7 @@ def video_feed():
 # -------------------------------------------------------------
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    global active_page
     await websocket.accept()
     print("Phone controller connected.")
     active_wheel = None
@@ -106,6 +89,35 @@ async def websocket_endpoint(websocket: WebSocket):
             elif action == "cut":
                 # DaVinci Split / Blade Shortcut: Ctrl + \
                 pyautogui.hotkey("ctrl", "\\")
+
+            elif action == "add_serial":
+                pyautogui.hotkey("alt", "s")
+
+            elif action == "add_parallel":
+                pyautogui.hotkey("alt", "p")
+
+            elif action == "undo":
+                pyautogui.hotkey("ctrl", "z")
+
+            elif action == "redo":
+                pyautogui.hotkey("ctrl", "shift", "z")
+
+            # --- MULTI-PAGE & CLIP MANAGEMENT SHORTCUTS ---
+            elif action == "page_edit":
+                pyautogui.hotkey("shift", "4")
+                active_page = "edit"
+
+            elif action == "page_color":
+                pyautogui.hotkey("shift", "6")
+                active_page = "color"
+
+            elif action == "disable_clip":
+                # Native Resolve shortcut to enable/disable clip
+                pyautogui.press("d")
+
+            elif action == "retime":
+                # Native Resolve shortcut for Retime/Slowmo controls
+                pyautogui.hotkey("ctrl", "r")
 
             # --- 3-WAY COLOR WHEEL TELEMETRY ---
             elif action == "color":

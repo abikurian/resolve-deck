@@ -26,20 +26,54 @@
 
         header {
             background: #2b2d31;
-            padding: 10px 16px;
+            padding: 8px 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid #202225;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            flex-shrink: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .header-title {
             font-weight: 800;
-            font-size: 12px;
+            font-size: 11px;
             letter-spacing: 0.8px;
-            color: #e2e8f0;
+            color: #9ca3af;
             text-transform: uppercase;
+        }
+
+        .tabs-container {
+            display: flex;
+            gap: 6px;
+        }
+
+        .tab-btn {
+            background: #1e2024;
+            color: #9ca3af;
+            border: 1px solid #35383d;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .tab-btn.active {
+            background: #3b82f6;
+            color: #ffffff;
+            border-color: #60a5fa;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
         }
 
         .status-dot {
@@ -74,10 +108,9 @@
             object-fit: contain;
         }
 
-        /* Custom Deck Hybrid Container */
-        #custom-deck {
+        /* Deck View Containers */
+        .deck-container {
             flex: 1;
-            display: flex;
             flex-direction: column;
             gap: 20px;
             padding: 15px;
@@ -100,7 +133,7 @@
             text-transform: uppercase;
             cursor: pointer;
             transition: transform 0.05s, box-shadow 0.05s;
-            padding: 8px 4px;
+            padding: 8px 6px;
             min-height: 44px;
             border: 1px solid rgba(255, 255, 255, 0.05);
             outline: none;
@@ -220,6 +253,10 @@
         @media (max-width: 600px) {
             .key {
                 font-size: 9px;
+                padding: 6px 2px;
+            }
+            .header-title {
+                display: none;
             }
         }
     </style>
@@ -228,7 +265,13 @@
 <body>
 
     <header>
-        <span class="header-title">DaVinci Resolve Deck</span>
+        <div class="header-left">
+            <span class="header-title">Resolve Deck</span>
+            <div class="tabs-container">
+                <button id="tab-edit" class="tab-btn" onclick="switchMode('edit')">EDIT DECK</button>
+                <button id="tab-color" class="tab-btn active" onclick="switchMode('color')">COLOR DECK</button>
+            </div>
+        </div>
         <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 10px; color: #9ca3af; text-transform: uppercase; font-weight: 700;">Deck</span>
             <span id="dot" class="status-dot"></span>
@@ -240,48 +283,54 @@
         <img id="stream-img" src="/stream" alt="Resolve Preview / Scopes">
     </div>
 
-    <!-- Hybrid Custom Deck -->
-    <div id="custom-deck" style="display: flex; flex-direction: column; gap: 20px; padding: 15px;">
-        <!-- Top Row: Action Keys -->
-        <div class="action-row" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+    <!-- 1. Edit Deck View -->
+    <div id="deck-edit" class="deck-container" style="display: none;">
+        <!-- Top Action Keys for Edit -->
+        <div class="action-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <button class="key key-red" onclick="sendAction('cut')">SPLIT</button>
+            <button class="key key-dark" onclick="sendAction('disable_clip')">DISABLE CLIP</button>
+            <button class="key key-dark" onclick="sendAction('retime')">RETIME / SLOWMO</button>
+        </div>
+
+        <!-- Jog Wheel & Play/Stop Transport -->
+        <div class="wheels-row" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 10px 0;">
+            <div id="jog-wheel">
+                <div id="jog-indicator"></div>
+            </div>
+            <button class="key key-dark" style="min-width: 160px; min-height: 50px; font-size: 12px; font-weight: 800;" onclick="sendAction('play_pause')">PLAY / STOP</button>
+        </div>
+    </div>
+
+    <!-- 2. Color Deck View -->
+    <div id="deck-color" class="deck-container" style="display: flex;">
+        <!-- Top Action Keys for Color Grading -->
+        <div class="action-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
             <button class="key key-dark" onclick="sendAction('undo')">UNDO</button>
             <button class="key key-dark" onclick="sendAction('redo')">REDO</button>
             <button class="key key-dark" onclick="sendAction('add_serial')">SERIAL NODE</button>
             <button class="key key-dark" onclick="sendAction('add_parallel')">PARL NODE</button>
-            <button class="key key-red" onclick="sendAction('cut')">SPLIT</button>
         </div>
 
-        <!-- Bottom Section: Wheels & Transport -->
-        <div class="wheels-row" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; align-items: center;">
-            <!-- Jog Wheel & Play -->
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                <div id="jog-wheel">
-                    <div id="jog-indicator"></div>
+        <!-- Primaries Color Wheels (Lift, Gamma, Gain) -->
+        <div class="wheels-row" style="display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap; padding: 10px 0;">
+            <div class="wheel-card" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                <span class="wheel-label">Lift</span>
+                <div class="color-pad" id="wheel-lift">
+                    <div class="puck" id="puck-lift"></div>
                 </div>
-                <button class="key key-dark" style="min-width: 140px; min-height: 48px; font-size: 11px; font-weight: 800;" onclick="sendAction('play_pause')">PLAY / STOP</button>
             </div>
 
-            <!-- Color Wheels (Lift, Gamma, Gain) -->
-            <div style="display: flex; gap: 16px; align-items: center; justify-content: center; flex-wrap: wrap;">
-                <div class="wheel-card" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                    <span class="wheel-label">Lift</span>
-                    <div class="color-pad" id="wheel-lift">
-                        <div class="puck" id="puck-lift"></div>
-                    </div>
+            <div class="wheel-card" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                <span class="wheel-label">Gamma</span>
+                <div class="color-pad" id="wheel-gamma">
+                    <div class="puck" id="puck-gamma"></div>
                 </div>
+            </div>
 
-                <div class="wheel-card" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                    <span class="wheel-label">Gamma</span>
-                    <div class="color-pad" id="wheel-gamma">
-                        <div class="puck" id="puck-gamma"></div>
-                    </div>
-                </div>
-
-                <div class="wheel-card" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                    <span class="wheel-label">Gain</span>
-                    <div class="color-pad" id="wheel-gain">
-                        <div class="puck" id="puck-gain"></div>
-                    </div>
+            <div class="wheel-card" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                <span class="wheel-label">Gain</span>
+                <div class="color-pad" id="wheel-gain">
+                    <div class="puck" id="puck-gain"></div>
                 </div>
             </div>
         </div>
@@ -312,6 +361,30 @@
         function sendAction(act) {
             if (navigator.vibrate) navigator.vibrate(20);
             send({ action: act });
+        }
+
+        // -------------------------------------------------------------
+        // MULTI-PAGE VIEW ROUTING (EDIT vs COLOR)
+        // -------------------------------------------------------------
+        function switchMode(mode) {
+            const editDeck = document.getElementById("deck-edit");
+            const colorDeck = document.getElementById("deck-color");
+            const tabEdit = document.getElementById("tab-edit");
+            const tabColor = document.getElementById("tab-color");
+
+            if (mode === 'edit') {
+                editDeck.style.display = "flex";
+                colorDeck.style.display = "none";
+                tabEdit.classList.add("active");
+                tabColor.classList.remove("active");
+                sendAction('page_edit');
+            } else {
+                editDeck.style.display = "none";
+                colorDeck.style.display = "flex";
+                tabColor.classList.add("active");
+                tabEdit.classList.remove("active");
+                sendAction('page_color');
+            }
         }
 
         // -------------------------------------------------------------
