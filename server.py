@@ -85,13 +85,17 @@ async def websocket_endpoint(websocket: WebSocket):
             # --- WORKSPACE PAGE SWITCHING ---
             elif action == "page_edit":
                 pyautogui.keyDown('shift')
+                time.sleep(0.05)
                 pyautogui.press('4')
+                time.sleep(0.05)
                 pyautogui.keyUp('shift')
                 current_page = "edit"
 
             elif action == "page_color":
                 pyautogui.keyDown('shift')
+                time.sleep(0.05)
                 pyautogui.press('6')
+                time.sleep(0.05)
                 pyautogui.keyUp('shift')
                 current_page = "color"
 
