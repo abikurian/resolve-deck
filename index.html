@@ -64,8 +64,11 @@
         /* Bottom: Control Surface */
         #controls {
             flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
             padding: 12px;
             gap: 12px;
         }
@@ -118,10 +121,12 @@
 
         /* Color Wheels Section */
         .wheels-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
             align-items: center;
+            gap: 6px;
         }
 
         .wheel-card {
