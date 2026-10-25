@@ -4,17 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Resolve Deck</title>
+    <title>DaVinci Resolve Speed Editor</title>
     <style>
         * {
             box-sizing: border-box;
-            touch-action: none;
+            touch-action: manipulation;
             -webkit-user-select: none;
+            user-select: none;
         }
 
         body {
             margin: 0;
-            background: #0d0f12;
+            background: #4a4c52;
             color: #e1e7ec;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             overflow: hidden;
@@ -24,12 +25,21 @@
         }
 
         header {
-            background: #171b21;
+            background: #2b2d31;
             padding: 10px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #282f3a;
+            border-bottom: 2px solid #202225;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .header-title {
+            font-weight: 800;
+            font-size: 12px;
+            letter-spacing: 0.8px;
+            color: #e2e8f0;
+            text-transform: uppercase;
         }
 
         .status-dot {
@@ -38,21 +48,24 @@
             border-radius: 50%;
             background: #ef4444;
             display: inline-block;
+            box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
         }
 
         .status-dot.connected {
             background: #10b981;
+            box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
         }
 
         /* Top: Video Stream & Scopes */
         #monitor-panel {
             width: 100%;
-            height: 38%;
+            height: 35%;
             background: #000;
             display: flex;
             justify-content: center;
             align-items: center;
-            border-bottom: 2px solid #282f3a;
+            border-bottom: 3px solid #202225;
+            flex-shrink: 0;
         }
 
         #monitor-panel img {
@@ -61,107 +74,162 @@
             object-fit: contain;
         }
 
-        /* Bottom: Control Surface */
-        #controls {
+        /* Speed Editor Hardware Board */
+        #speed-editor-board {
             flex: 1;
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            padding: 12px;
-            gap: 12px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            overflow-y: auto;
+            background: radial-gradient(circle at 50% 20%, #52545c 0%, #44464c 100%);
+            box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.4);
         }
 
-        /* Jog Wheel Styling */
-        .jog-container {
+        /* Sub-grids */
+        .board-col {
+            display: grid;
+            gap: 10px;
+            align-content: start;
+        }
+
+        .grid-3col {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .col-right {
             display: flex;
             flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .row-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .row-3col {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+
+        /* Mechanical Tactile Keycap Design */
+        .key {
+            border-radius: 4px;
+            box-shadow: 0 4px 0 #1e2024, 0 5px 10px rgba(0, 0, 0, 0.5);
+            font-size: 10px;
+            font-weight: 700;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.05s, box-shadow 0.05s;
+            padding: 8px;
+            min-height: 44px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            outline: none;
+            letter-spacing: 0.4px;
+            line-height: 1.2;
+        }
+
+        .key:active,
+        .key.active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #1e2024, 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Color Variants */
+        .key-dark {
+            background: #35383d;
+            color: #9ca3af;
+        }
+
+        .key-white {
+            background: #e5e7eb;
+            color: #1f2937;
+            box-shadow: 0 4px 0 #9ca3af, 0 5px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .key-white:active,
+        .key-white.active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #9ca3af, 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .key-red {
+            background: #8b2629;
+            color: #f87171;
+            box-shadow: 0 4px 0 #581618, 0 5px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .key-red:active,
+        .key-red.active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #581618, 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Key Sizing Utilities */
+        .key-large {
+            min-height: 60px;
+            font-size: 13px;
+        }
+
+        /* Right Column Wheel Mount */
+        .wheel-mount {
+            flex: 1;
+            display: flex;
             align-items: center;
             justify-content: center;
+            padding: 10px 0;
+            width: 100%;
         }
 
         #jog-wheel {
-            width: 170px;
-            height: 170px;
+            width: 140px;
+            height: 140px;
             border-radius: 50%;
-            background: radial-gradient(circle, #252b36 30%, #15181f 90%);
-            border: 4px solid #3b4455;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            background: #171717;
+            border: 4px solid #282a2e;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), inset 0 2px 4px rgba(255, 255, 255, 0.08);
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
+            touch-action: none;
+            cursor: grab;
+        }
+
+        #jog-wheel:active {
+            cursor: grabbing;
         }
 
         #jog-indicator {
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            background: #38bdf8;
+            background: #121315;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7), 0 1px 1px rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.6);
             position: absolute;
             top: 14px;
-            box-shadow: 0 0 10px #38bdf8;
-        }
-
-        .transport-bar {
-            margin-top: 10px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            background: #252b36;
-            color: #fff;
-            border: 1px solid #475569;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-weight: 600;
-        }
-
-        /* Color Wheels Section */
-        .wheels-container {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .wheel-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .wheel-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            font-weight: 700;
-            color: #94a3b8;
-            margin-bottom: 4px;
-        }
-
-        .color-pad {
-            width: 85px;
-            height: 85px;
-            border-radius: 50%;
-            background: radial-gradient(circle, #222731 0%, #12141a 100%);
-            border: 2px solid #334155;
-            position: relative;
-        }
-
-        .puck {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #fff;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            left: calc(50% - 9px);
             pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            #speed-editor-board {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 14px;
+            }
         }
     </style>
 </head>
@@ -169,8 +237,11 @@
 <body>
 
     <header>
-        <span style="font-weight: 700;">DAVINCI REMOTE DECK</span>
-        <div><span id="dot" class="status-dot"></span></div>
+        <span class="header-title">DaVinci Resolve Speed Editor</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 10px; color: #9ca3af; text-transform: uppercase; font-weight: 700;">Deck</span>
+            <span id="dot" class="status-dot"></span>
+        </div>
     </header>
 
     <!-- Live Scope / Preview Feed -->
@@ -178,37 +249,65 @@
         <img id="stream-img" src="/stream" alt="Resolve Preview / Scopes">
     </div>
 
-    <!-- Physical Deck Emulation -->
-    <div id="controls">
-        <!-- Jog / Shuttle -->
-        <div class="jog-container">
-            <div id="jog-wheel">
-                <div id="jog-indicator"></div>
-            </div>
-            <div class="transport-bar">
-                <button class="btn" onclick="sendAction('play_pause')">PLAY</button>
-                <button class="btn" style="background:#dc2626;" onclick="sendAction('cut')">SPLIT</button>
-            </div>
+    <!-- Speed Editor Chassis -->
+    <div id="speed-editor-board">
+        <!-- Left Column: Edit Actions -->
+        <div class="board-col grid-3col">
+            <button class="key key-dark">SMART INSRT</button>
+            <button class="key key-dark">APPND</button>
+            <button class="key key-dark">RIPL OWR</button>
+
+            <button class="key key-dark">CLOSE UP</button>
+            <button class="key key-dark">PLACE ON TOP</button>
+            <button class="key key-dark">SRC OVERWR</button>
+
+            <button class="key key-dark" onclick="sendAction('add_serial')">SERIAL</button>
+            <button class="key key-dark" onclick="sendAction('add_parallel')">PARALLEL</button>
+            <button class="key key-red" onclick="sendAction('cut')">SPLIT</button>
+
+            <button class="key key-dark">TRIM IN</button>
+            <button class="key key-dark">TRIM OUT</button>
+            <button class="key key-dark">ROLL</button>
+
+            <button class="key key-white key-large" style="grid-column: span 1;">IN</button>
+            <button class="key key-white key-large" style="grid-column: span 2;">OUT</button>
         </div>
 
-        <!-- 3-Way Color Wheels -->
-        <div class="wheels-container">
-            <div class="wheel-card">
-                <span class="wheel-label">Lift</span>
-                <div class="color-pad" id="wheel-lift">
-                    <div class="puck" id="puck-lift"></div>
-                </div>
+        <!-- Middle Column: Transport & Cams -->
+        <div class="board-col grid-3col">
+            <button class="key key-dark">ESC</button>
+            <button class="key key-dark">SYNC BIN</button>
+            <button class="key key-dark">TRANS</button>
+
+            <button class="key key-dark">CAM 1</button>
+            <button class="key key-dark">CAM 2</button>
+            <button class="key key-dark">CAM 3</button>
+
+            <button class="key key-dark">CAM 4</button>
+            <button class="key key-dark">CAM 5</button>
+            <button class="key key-dark">CAM 6</button>
+
+            <button class="key key-dark" onclick="sendAction('undo')">UNDO</button>
+            <button class="key key-dark" onclick="sendAction('redo')">REDO</button>
+            <button class="key key-dark">AUDIO LEVEL</button>
+
+            <button class="key key-dark" style="grid-column: span 3; min-height: 52px; font-size: 12px; font-weight: 800; background: #2b2e33;" onclick="sendAction('play_pause')">STOP / PLAY</button>
+        </div>
+
+        <!-- Right Column: Wheel & Modes -->
+        <div class="col-right">
+            <div class="row-2col">
+                <button class="key key-dark">SOURCE</button>
+                <button class="key key-dark">TIMELINE</button>
             </div>
-            <div class="wheel-card">
-                <span class="wheel-label">Gamma</span>
-                <div class="color-pad" id="wheel-gamma">
-                    <div class="puck" id="puck-gamma"></div>
-                </div>
+            <div class="row-3col">
+                <button class="key key-white">SHTL</button>
+                <button class="key key-white">JOG</button>
+                <button class="key key-white">SCRL</button>
             </div>
-            <div class="wheel-card">
-                <span class="wheel-label">Gain</span>
-                <div class="color-pad" id="wheel-gain">
-                    <div class="puck" id="puck-gain"></div>
+            <div class="wheel-mount">
+                <div id="jog-wheel">
+                    <div id="jog-indicator"></div>
                 </div>
             </div>
         </div>
@@ -242,7 +341,7 @@
         }
 
         // -------------------------------------------------------------
-        // JOG WHEEL LOGIC
+        // BLACKMAGIC JOG WHEEL LOGIC
         // -------------------------------------------------------------
         const jog = document.getElementById("jog-wheel");
         const indicator = document.getElementById("jog-indicator");
@@ -271,9 +370,9 @@
 
             rotation += delta;
             indicator.style.transform = `rotate(${rotation}deg)`;
-            indicator.style.transformOrigin = `50% 70px`;
+            indicator.style.transformOrigin = `50% 56px`;
 
-            // Trigger frame step every 15 degrees of rotation
+            // Trigger frame step every 12 degrees of rotation
             if (Math.abs(delta) > 12) {
                 const step = delta > 0 ? 1 : -1;
                 send({ action: "jog", delta: step });
@@ -283,44 +382,6 @@
         });
 
         jog.addEventListener("touchend", () => { prevAngle = null; });
-
-        // -------------------------------------------------------------
-        // COLOR WHEEL PUCK TRACKING
-        // -------------------------------------------------------------
-        ["lift", "gamma", "gain"].forEach(name => {
-            const pad = document.getElementById(`wheel-${name}`);
-            const puck = document.getElementById(`puck-${name}`);
-
-            pad.addEventListener("touchmove", (e) => {
-                const touch = e.touches[0];
-                const rect = pad.getBoundingClientRect();
-                const r = rect.width / 2;
-                const dx = touch.clientX - (rect.left + r);
-                const dy = touch.clientY - (rect.top + r);
-
-                // Clamping to circular radius
-                const dist = Math.min(Math.sqrt(dx * dx + dy * dy), r);
-                const angle = Math.atan2(dy, dx);
-                const clampX = Math.cos(angle) * dist;
-                const clampY = Math.sin(angle) * dist;
-
-                puck.style.transform = `translate(calc(-50% + ${clampX}px), calc(-50% + ${clampY}px))`;
-
-                // Send normalized vector (-1.0 to 1.0)
-                send({
-                    action: "color",
-                    wheel: name,
-                    dx: clampX / r,
-                    dy: clampY / r
-                });
-            });
-
-            pad.addEventListener("touchend", () => {
-                // Return puck to dead center
-                puck.style.transform = `translate(-50%, -50%)`;
-                send({ action: "color", wheel: name, dx: 0, dy: 0 });
-            });
-        });
     </script>
 </body>
 
