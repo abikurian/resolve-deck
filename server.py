@@ -1,12 +1,11 @@
 import time
 import asyncio
+import json
 import keyboard
 import pyautogui
+pyautogui.PAUSE = 0
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
-
-# Disable PyAutoGUI delay for instantaneous jog wheel responsiveness
-pyautogui.PAUSE = 0.0
 
 # Multi-Page Interface State ("edit" or "color")
 current_page = "edit"
@@ -23,77 +22,117 @@ async def websocket_endpoint(websocket: WebSocket):
     print("Phone controller connected.")
     try:
         while True:
-            data = await websocket.receive_json()
-            action = data.get("action")
-            
-            # --- JOG / SHUTTLE WHEEL ---
-            if action == "jog":
-                delta = data.get("delta", 0)
-                if delta > 0:
-                    pyautogui.press("right", presses=int(abs(delta)))
-                elif delta < 0:
-                    pyautogui.press("left", presses=int(abs(delta)))
-                    
-            elif action == "play_pause":
-                pyautogui.press("space")
+            raw_msg = await websocket.receive_text()
+            try:
+                action = raw_msg
+                data_dict = {}
+                if raw_msg.startswith("{"):
+                    try:
+                        data_dict = json.loads(raw_msg)
+                        action = data_dict.get("action", "")
+                    except Exception:
+                        pass
 
-            elif action == "cut":
-                # DaVinci Split / Blade Shortcut: Ctrl + \
-                pyautogui.hotkey("ctrl", "\\")
+                if ":" in action:
+                    cmd, data = action.split(":", 1)
+                    if cmd == "mouse":
+                        dx, dy = map(float, data.split(","))
+                        pyautogui.move(dx * 1.5, dy * 1.5)  # 1.5x sensitivity multiplier
+                else:
+                    if action == "click":
+                        pyautogui.click()
 
-            elif action == "add_serial":
-                pyautogui.hotkey("alt", "s")
+                    elif action == "tool_arrow":
+                        keyboard.send('a')
 
-            elif action == "add_parallel":
-                pyautogui.hotkey("alt", "p")
+                    elif action == "tool_blade":
+                        keyboard.send('b')
 
-            elif action == "undo":
-                pyautogui.hotkey("ctrl", "z")
+                    elif action == "snapping":
+                        keyboard.send('n')
 
-            elif action == "redo":
-                pyautogui.hotkey("ctrl", "shift", "z")
+                    elif action == "zoom_in":
+                        keyboard.send('ctrl+=')
 
-            elif action == "disable_clip":
-                # Native Resolve shortcut to enable/disable clip
-                pyautogui.press("d")
+                    elif action == "zoom_out":
+                        keyboard.send('ctrl+-')
 
-            elif action == "retime":
-                # Native Resolve shortcut for Retime/Slowmo controls
-                pyautogui.hotkey("ctrl", "r")
+                    # --- JOG / SHUTTLE WHEEL ---
+                    elif action == "jog":
+                        delta = data_dict.get("delta", 0)
+                        if delta > 0:
+                            keyboard.send('right')
+                        elif delta < 0:
+                            keyboard.send('left')
 
-            # --- ADVANCED EDITING & NAVIGATION SHORTCUTS ---
-            elif action == "mark_in":
-                pyautogui.press("i")
+                    elif action == "jog_fwd":
+                        keyboard.send('right')
 
-            elif action == "mark_out":
-                pyautogui.press("o")
+                    elif action == "jog_rev":
+                        keyboard.send('left')
 
-            elif action == "delete":
-                pyautogui.press("backspace")
+                    elif action == "play_pause":
+                        pyautogui.press("space")
 
-            elif action == "ripple_del":
-                keyboard.send("shift+backspace")
+                    elif action == "cut":
+                        # DaVinci Split / Blade Shortcut: Ctrl + \
+                        pyautogui.hotkey("ctrl", "\\")
 
-            elif action == "esc":
-                keyboard.send("esc")
+                    elif action == "add_serial":
+                        pyautogui.hotkey("alt", "s")
 
-            elif action == "prev_clip":
-                pyautogui.press("up")
+                    elif action == "add_parallel":
+                        pyautogui.hotkey("alt", "p")
 
-            elif action == "next_clip":
-                pyautogui.press("down")
+                    elif action == "undo":
+                        pyautogui.hotkey("ctrl", "z")
 
-            elif action == "bypass_color":
-                pyautogui.hotkey("shift", "d")
+                    elif action == "redo":
+                        pyautogui.hotkey("ctrl", "shift", "z")
 
-            # --- WORKSPACE PAGE SWITCHING ---
-            elif action == "page_edit":
-                keyboard.send("shift+4")
-                current_page = "edit"
+                    elif action == "disable_clip":
+                        # Native Resolve shortcut to enable/disable clip
+                        pyautogui.press("d")
 
-            elif action == "page_color":
-                keyboard.send("shift+6")
-                current_page = "color"
+                    elif action == "retime":
+                        # Native Resolve shortcut for Retime/Slowmo controls
+                        pyautogui.hotkey("ctrl", "r")
+
+                    # --- ADVANCED EDITING & NAVIGATION SHORTCUTS ---
+                    elif action == "mark_in":
+                        pyautogui.press("i")
+
+                    elif action == "mark_out":
+                        pyautogui.press("o")
+
+                    elif action == "delete":
+                        pyautogui.press("backspace")
+
+                    elif action == "ripple_del":
+                        keyboard.send("shift+backspace")
+
+                    elif action == "esc":
+                        keyboard.send("esc")
+
+                    elif action == "prev_clip":
+                        pyautogui.press("up")
+
+                    elif action == "next_clip":
+                        pyautogui.press("down")
+
+                    elif action == "bypass_color":
+                        pyautogui.hotkey("shift", "d")
+
+                    # --- WORKSPACE PAGE SWITCHING ---
+                    elif action == "page_edit":
+                        keyboard.send("shift+4")
+                        current_page = "edit"
+
+                    elif action == "page_color":
+                        keyboard.send("shift+6")
+                        current_page = "color"
+            except Exception as e:
+                print(f"Error handling action: {e}")
 
     except WebSocketDisconnect:
         print("Phone controller disconnected.")
