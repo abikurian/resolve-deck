@@ -26,7 +26,7 @@
 
         header {
             background: #2b2d31;
-            padding: 8px 14px;
+            padding: 10px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -35,45 +35,12 @@
             flex-shrink: 0;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
         .header-title {
             font-weight: 800;
-            font-size: 11px;
+            font-size: 12px;
             letter-spacing: 0.8px;
-            color: #9ca3af;
+            color: #e2e8f0;
             text-transform: uppercase;
-        }
-
-        .tabs-container {
-            display: flex;
-            gap: 6px;
-        }
-
-        .tab-btn {
-            background: #1e2024;
-            color: #9ca3af;
-            border: 1px solid #35383d;
-            border-radius: 4px;
-            padding: 6px 12px;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.15s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-        }
-
-        .tab-btn.active {
-            background: #3b82f6;
-            color: #ffffff;
-            border-color: #60a5fa;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
         }
 
         .status-dot {
@@ -93,7 +60,7 @@
         /* Top: Video Stream & Scopes */
         #monitor-panel {
             width: 100%;
-            height: 35%;
+            height: 38%;
             background: #000;
             display: flex;
             justify-content: center;
@@ -102,15 +69,9 @@
             flex-shrink: 0;
         }
 
-        #monitor-panel img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        /* Deck View Containers */
-        .deck-container {
+        #custom-deck {
             flex: 1;
+            display: flex;
             flex-direction: column;
             gap: 20px;
             padding: 15px;
@@ -151,18 +112,6 @@
         .key-dark {
             background: #35383d;
             color: #9ca3af;
-        }
-
-        .key-white {
-            background: #e5e7eb;
-            color: #1f2937;
-            box-shadow: 0 4px 0 #9ca3af, 0 5px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .key-white:active,
-        .key-white.active {
-            transform: translateY(4px);
-            box-shadow: 0 0 0 #9ca3af, 0 1px 3px rgba(0, 0, 0, 0.5);
         }
 
         .key-red {
@@ -210,53 +159,10 @@
             pointer-events: none;
         }
 
-        /* 3-Way Color Wheels */
-        .wheel-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .wheel-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            font-weight: 700;
-            color: #9ca3af;
-            letter-spacing: 0.5px;
-        }
-
-        .color-pad {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: radial-gradient(circle, #222731 0%, #12141a 100%);
-            border: 3px solid #282d37;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(0, 0, 0, 0.6);
-            position: relative;
-            touch-action: none;
-        }
-
-        .puck {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #ffffff;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0, 0, 0, 0.6);
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-        }
-
         @media (max-width: 600px) {
             .key {
                 font-size: 9px;
                 padding: 6px 2px;
-            }
-            .header-title {
-                display: none;
             }
         }
     </style>
@@ -265,74 +171,41 @@
 <body>
 
     <header>
-        <div class="header-left">
-            <span class="header-title">Resolve Deck</span>
-            <div class="tabs-container">
-                <button id="tab-edit" class="tab-btn" onclick="switchMode('edit')">EDIT DECK</button>
-                <button id="tab-color" class="tab-btn active" onclick="switchMode('color')">COLOR DECK</button>
-            </div>
-        </div>
+        <span class="header-title">DaVinci Resolve Deck</span>
         <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 10px; color: #9ca3af; text-transform: uppercase; font-weight: 700;">Deck</span>
+            <span style="font-size: 10px; color: #9ca3af; text-transform: uppercase; font-weight: 700;">Live Feed</span>
             <span id="dot" class="status-dot"></span>
         </div>
     </header>
 
     <!-- Live Scope / Preview Feed -->
     <div id="monitor-panel">
-        <img id="stream-img" src="/stream" alt="Resolve Preview / Scopes">
+        <img id="stream-img" src="/stream" alt="Resolve Preview / Scopes" style="width: 100%; height: 100%; object-fit: contain;">
     </div>
 
-    <!-- 1. Edit Deck View -->
-    <div id="deck-edit" class="deck-container" style="display: none;">
-        <!-- Top Action Keys for Edit -->
-        <div class="action-row" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-            <button class="key key-red" onclick="sendAction('cut')">SPLIT</button>
-            <button class="key key-dark" onclick="sendAction('disable_clip')">DISABLE CLIP</button>
-            <button class="key key-dark" onclick="sendAction('retime')">RETIME / SLOWMO</button>
-        </div>
-
-        <!-- Jog Wheel & Play/Stop Transport -->
-        <div class="wheels-row" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 10px 0;">
-            <div id="jog-wheel">
-                <div id="jog-indicator"></div>
-            </div>
-            <button class="key key-dark" style="min-width: 160px; min-height: 50px; font-size: 12px; font-weight: 800;" onclick="sendAction('play_pause')">PLAY / STOP</button>
-        </div>
-    </div>
-
-    <!-- 2. Color Deck View -->
-    <div id="deck-color" class="deck-container" style="display: flex;">
-        <!-- Top Action Keys for Color Grading -->
-        <div class="action-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+    <!-- Unified Custom Deck -->
+    <div id="custom-deck" style="display: flex; flex-direction: column; gap: 20px; padding: 15px;">
+        <!-- Row 1: Nodes & Modifiers -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
             <button class="key key-dark" onclick="sendAction('undo')">UNDO</button>
             <button class="key key-dark" onclick="sendAction('redo')">REDO</button>
             <button class="key key-dark" onclick="sendAction('add_serial')">SERIAL NODE</button>
             <button class="key key-dark" onclick="sendAction('add_parallel')">PARL NODE</button>
         </div>
 
-        <!-- Primaries Color Wheels (Lift, Gamma, Gain) -->
-        <div class="wheels-row" style="display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap; padding: 10px 0;">
-            <div class="wheel-card" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                <span class="wheel-label">Lift</span>
-                <div class="color-pad" id="wheel-lift">
-                    <div class="puck" id="puck-lift"></div>
-                </div>
-            </div>
+        <!-- Row 2: Clip Actions -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <button class="key key-red" onclick="sendAction('cut')">SPLIT</button>
+            <button class="key key-dark" onclick="sendAction('disable_clip')">DISABLE CLIP</button>
+            <button class="key key-dark" onclick="sendAction('retime')">RETIME</button>
+        </div>
 
-            <div class="wheel-card" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                <span class="wheel-label">Gamma</span>
-                <div class="color-pad" id="wheel-gamma">
-                    <div class="puck" id="puck-gamma"></div>
-                </div>
+        <!-- Row 3: Transport -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 10px 0;">
+            <div id="jog-wheel">
+                <div id="jog-indicator"></div>
             </div>
-
-            <div class="wheel-card" style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                <span class="wheel-label">Gain</span>
-                <div class="color-pad" id="wheel-gain">
-                    <div class="puck" id="puck-gain"></div>
-                </div>
-            </div>
+            <button class="key key-dark" style="min-width: 160px; min-height: 50px; font-size: 12px; font-weight: 800;" onclick="sendAction('play_pause')">PLAY / STOP</button>
         </div>
     </div>
 
@@ -361,30 +234,6 @@
         function sendAction(act) {
             if (navigator.vibrate) navigator.vibrate(20);
             send({ action: act });
-        }
-
-        // -------------------------------------------------------------
-        // MULTI-PAGE VIEW ROUTING (EDIT vs COLOR)
-        // -------------------------------------------------------------
-        function switchMode(mode) {
-            const editDeck = document.getElementById("deck-edit");
-            const colorDeck = document.getElementById("deck-color");
-            const tabEdit = document.getElementById("tab-edit");
-            const tabColor = document.getElementById("tab-color");
-
-            if (mode === 'edit') {
-                editDeck.style.display = "flex";
-                colorDeck.style.display = "none";
-                tabEdit.classList.add("active");
-                tabColor.classList.remove("active");
-                sendAction('page_edit');
-            } else {
-                editDeck.style.display = "none";
-                colorDeck.style.display = "flex";
-                tabColor.classList.add("active");
-                tabEdit.classList.remove("active");
-                sendAction('page_color');
-            }
         }
 
         // -------------------------------------------------------------
@@ -429,45 +278,6 @@
         });
 
         jog.addEventListener("touchend", () => { prevAngle = null; });
-
-        // -------------------------------------------------------------
-        // COLOR WHEEL PUCK TRACKING
-        // -------------------------------------------------------------
-        ["lift", "gamma", "gain"].forEach(name => {
-            const pad = document.getElementById(`wheel-${name}`);
-            const puck = document.getElementById(`puck-${name}`);
-            if (!pad || !puck) return;
-
-            pad.addEventListener("touchmove", (e) => {
-                const touch = e.touches[0];
-                const rect = pad.getBoundingClientRect();
-                const r = rect.width / 2;
-                const dx = touch.clientX - (rect.left + r);
-                const dy = touch.clientY - (rect.top + r);
-
-                // Clamping to circular radius
-                const dist = Math.min(Math.sqrt(dx * dx + dy * dy), r);
-                const angle = Math.atan2(dy, dx);
-                const clampX = Math.cos(angle) * dist;
-                const clampY = Math.sin(angle) * dist;
-
-                puck.style.transform = `translate(calc(-50% + ${clampX}px), calc(-50% + ${clampY}px))`;
-
-                // Send normalized vector (-1.0 to 1.0)
-                send({
-                    action: "color",
-                    wheel: name,
-                    dx: clampX / r,
-                    dy: clampY / r
-                });
-            });
-
-            pad.addEventListener("touchend", () => {
-                // Return puck to dead center
-                puck.style.transform = `translate(-50%, -50%)`;
-                send({ action: "color", wheel: name, dx: 0, dy: 0 });
-            });
-        });
     </script>
 </body>
 

@@ -11,36 +11,16 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 # Disable PyAutoGUI delay for instantaneous jog wheel responsiveness
 pyautogui.PAUSE = 0.0
 
-# -------------------------------------------------------------
-# COLOR WHEEL CALIBRATION TARGETS
-# Replace with coordinates output by calibrate.py:
-# color_targets = {"lift": (x1, y1), "gamma": (x2, y2), "gain": (x3, y3)}
-# -------------------------------------------------------------
-color_targets = {
-    "lift": (700, 850),
-    "gamma": (960, 850),
-    "gain": (1220, 850),
-}
-
-# Multi-Page Interface State ("color" or "edit")
-active_page = "color"
-
 app = FastAPI()
 
 # -------------------------------------------------------------
 # 1. SCREEN CAPTURE & SCOPE STREAM CONFIG
 # -------------------------------------------------------------
-# Adjust this monitor/bounding box to crop DaVinci's Viewer or Scopes.
-# You can leave it capturing the central area or specific display.
 sct = mss.mss()
 
 def get_scope_frame():
-    global active_page
-    # Dynamically swap capture region based on active page
-    if active_page == "color":
-        capture_bbox = {"top": 150, "left": 1200, "width": 720, "height": 405}
-    else:  # edit
-        capture_bbox = {"top": 100, "left": 960, "width": 960, "height": 540}
+    # Statically capture Monitor 2 (full-screen DaVinci 'Video Clean Feed')
+    capture_bbox = {"top": 0, "left": 1920, "width": 1920, "height": 1080}
     
     img = np.array(sct.grab(capture_bbox))
     frame = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
@@ -66,10 +46,8 @@ def video_feed():
 # -------------------------------------------------------------
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    global active_page
     await websocket.accept()
     print("Phone controller connected.")
-    active_wheel = None
     try:
         while True:
             data = await websocket.receive_json()
@@ -102,15 +80,6 @@ async def websocket_endpoint(websocket: WebSocket):
             elif action == "redo":
                 pyautogui.hotkey("ctrl", "shift", "z")
 
-            # --- MULTI-PAGE & CLIP MANAGEMENT SHORTCUTS ---
-            elif action == "page_edit":
-                pyautogui.hotkey("shift", "4")
-                active_page = "edit"
-
-            elif action == "page_color":
-                pyautogui.hotkey("shift", "6")
-                active_page = "color"
-
             elif action == "disable_clip":
                 # Native Resolve shortcut to enable/disable clip
                 pyautogui.press("d")
@@ -119,32 +88,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 # Native Resolve shortcut for Retime/Slowmo controls
                 pyautogui.hotkey("ctrl", "r")
 
-            # --- 3-WAY COLOR WHEEL TELEMETRY ---
-            elif action == "color":
-                wheel_name = data.get("wheel") # lift, gamma, gain
-                dx = float(data.get("dx", 0.0))
-                dy = float(data.get("dy", 0.0))
-                
-                # Finger lifted / released puck
-                if dx == 0 and dy == 0:
-                    pyautogui.mouseUp()
-                    active_wheel = None
-                else:
-                    if wheel_name in color_targets:
-                        base_x, base_y = color_targets[wheel_name]
-                        target_x = int(base_x + dx * 40)
-                        target_y = int(base_y + dy * 40)
-                        
-                        if active_wheel != wheel_name:
-                            pyautogui.mouseUp()
-                            pyautogui.moveTo(base_x, base_y)
-                            pyautogui.mouseDown()
-                            active_wheel = wheel_name
-                            
-                        pyautogui.moveTo(target_x, target_y)
-
     except WebSocketDisconnect:
-        pyautogui.mouseUp()
         print("Phone controller disconnected.")
 
 # -------------------------------------------------------------
