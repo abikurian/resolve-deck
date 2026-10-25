@@ -1,5 +1,6 @@
 import time
 import asyncio
+import keyboard
 import pyautogui
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
@@ -71,7 +72,10 @@ async def websocket_endpoint(websocket: WebSocket):
                 pyautogui.press("backspace")
 
             elif action == "ripple_del":
-                pyautogui.press("delete")
+                keyboard.send("shift+backspace")
+
+            elif action == "esc":
+                keyboard.send("esc")
 
             elif action == "prev_clip":
                 pyautogui.press("up")
@@ -84,19 +88,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
             # --- WORKSPACE PAGE SWITCHING ---
             elif action == "page_edit":
-                pyautogui.keyDown('shift')
-                time.sleep(0.05)
-                pyautogui.press('4')
-                time.sleep(0.05)
-                pyautogui.keyUp('shift')
+                keyboard.send("shift+4")
                 current_page = "edit"
 
             elif action == "page_color":
-                pyautogui.keyDown('shift')
-                time.sleep(0.05)
-                pyautogui.press('6')
-                time.sleep(0.05)
-                pyautogui.keyUp('shift')
+                keyboard.send("shift+6")
                 current_page = "color"
 
     except WebSocketDisconnect:
