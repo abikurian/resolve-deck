@@ -11,6 +11,17 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 # Disable PyAutoGUI delay for instantaneous jog wheel responsiveness
 pyautogui.PAUSE = 0.0
 
+# -------------------------------------------------------------
+# COLOR WHEEL CALIBRATION TARGETS
+# Replace with coordinates output by calibrate.py:
+# color_targets = {"lift": (x1, y1), "gamma": (x2, y2), "gain": (x3, y3)}
+# -------------------------------------------------------------
+color_targets = {
+    "lift": (700, 850),
+    "gamma": (960, 850),
+    "gain": (1220, 850),
+}
+
 app = FastAPI()
 
 # -------------------------------------------------------------
@@ -75,6 +86,7 @@ def video_feed():
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     print("Phone controller connected.")
+    active_wheel = None
     try:
         while True:
             data = await websocket.receive_json()
@@ -98,12 +110,29 @@ async def websocket_endpoint(websocket: WebSocket):
             # --- 3-WAY COLOR WHEEL TELEMETRY ---
             elif action == "color":
                 wheel_name = data.get("wheel") # lift, gamma, gain
-                dx = data.get("dx")
-                dy = data.get("dy")
-                # Logs vector adjustments; can be linked to loopMIDI or direct relative mouse dragging
-                print(f"Color {wheel_name.upper()} adjusting: Δx={dx:.2f}, Δy={dy:.2f}")
+                dx = float(data.get("dx", 0.0))
+                dy = float(data.get("dy", 0.0))
+                
+                # Finger lifted / released puck
+                if dx == 0 and dy == 0:
+                    pyautogui.mouseUp()
+                    active_wheel = None
+                else:
+                    if wheel_name in color_targets:
+                        base_x, base_y = color_targets[wheel_name]
+                        target_x = int(base_x + dx * 40)
+                        target_y = int(base_y + dy * 40)
+                        
+                        if active_wheel != wheel_name:
+                            pyautogui.mouseUp()
+                            pyautogui.moveTo(base_x, base_y)
+                            pyautogui.mouseDown()
+                            active_wheel = wheel_name
+                            
+                        pyautogui.moveTo(target_x, target_y)
 
     except WebSocketDisconnect:
+        pyautogui.mouseUp()
         print("Phone controller disconnected.")
 
 # -------------------------------------------------------------
