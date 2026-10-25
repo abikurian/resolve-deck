@@ -19,13 +19,14 @@ app = FastAPI()
 sct = mss.mss()
 
 def get_scope_frame():
-    # Statically capture Monitor 2 (full-screen DaVinci 'Video Clean Feed')
-    capture_bbox = {"top": 0, "left": 1920, "width": 1920, "height": 1080}
-    
-    img = np.array(sct.grab(capture_bbox))
+    # sct.monitors[0] is a virtual canvas of all screens. 
+    # [1] is primary, [2] is secondary.
+    monitor_idx = 2 if len(sct.monitors) > 2 else 1
+    monitor = sct.monitors[monitor_idx]
+    img = np.array(sct.grab(monitor))
     frame = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
-    
-    # Compress as JPEG for rapid streaming
+    # Resize the 1080p/4K feed down to a mobile-friendly width to maintain high FPS and low latency
+    frame = cv2.resize(frame, (854, 480))
     _, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
     return jpeg.tobytes()
 
@@ -87,6 +88,28 @@ async def websocket_endpoint(websocket: WebSocket):
             elif action == "retime":
                 # Native Resolve shortcut for Retime/Slowmo controls
                 pyautogui.hotkey("ctrl", "r")
+
+            # --- ADVANCED EDITING & NAVIGATION SHORTCUTS ---
+            elif action == "mark_in":
+                pyautogui.press("i")
+
+            elif action == "mark_out":
+                pyautogui.press("o")
+
+            elif action == "delete":
+                pyautogui.press("backspace")
+
+            elif action == "ripple_del":
+                pyautogui.press("delete")
+
+            elif action == "prev_clip":
+                pyautogui.press("up")
+
+            elif action == "next_clip":
+                pyautogui.press("down")
+
+            elif action == "bypass_color":
+                pyautogui.hotkey("shift", "d")
 
     except WebSocketDisconnect:
         print("Phone controller disconnected.")

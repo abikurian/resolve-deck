@@ -183,25 +183,34 @@
         <img id="stream-img" src="/stream" alt="Resolve Preview / Scopes" style="width: 100%; height: 100%; object-fit: contain;">
     </div>
 
-    <!-- Unified Custom Deck -->
-    <div id="custom-deck" style="display: flex; flex-direction: column; gap: 20px; padding: 15px;">
-        <!-- Row 1: Nodes & Modifiers -->
+    <!-- Advanced Custom Deck -->
+    <div id="custom-deck" style="display: flex; flex-direction: column; gap: 15px; padding: 15px;">
+        <!-- Row 1: Nodes & View -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+            <button class="key key-dark" onclick="sendAction('add_serial')">SERIAL NODE</button>
+            <button class="key key-dark" onclick="sendAction('add_parallel')">PARL NODE</button>
+            <button class="key key-dark" onclick="sendAction('bypass_color')">BYPASS FX</button>
+            <button class="key key-dark" onclick="sendAction('disable_clip')">DISABLE</button>
+        </div>
+
+        <!-- Row 2: Timeline Navigation -->
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
             <button class="key key-dark" onclick="sendAction('undo')">UNDO</button>
             <button class="key key-dark" onclick="sendAction('redo')">REDO</button>
-            <button class="key key-dark" onclick="sendAction('add_serial')">SERIAL NODE</button>
-            <button class="key key-dark" onclick="sendAction('add_parallel')">PARL NODE</button>
+            <button class="key key-dark" onclick="sendAction('prev_clip')">PREV CLIP</button>
+            <button class="key key-dark" onclick="sendAction('next_clip')">NEXT CLIP</button>
         </div>
 
-        <!-- Row 2: Clip Actions -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+        <!-- Row 3: Trimming & Marking -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+            <button class="key key-dark" onclick="sendAction('mark_in')">MARK IN</button>
+            <button class="key key-dark" onclick="sendAction('mark_out')">MARK OUT</button>
             <button class="key key-red" onclick="sendAction('cut')">SPLIT</button>
-            <button class="key key-dark" onclick="sendAction('disable_clip')">DISABLE CLIP</button>
-            <button class="key key-dark" onclick="sendAction('retime')">RETIME</button>
+            <button class="key key-red" onclick="sendAction('ripple_del')">RIPPLE DEL</button>
         </div>
 
-        <!-- Row 3: Transport -->
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 10px 0;">
+        <!-- Row 4: Transport Core -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 5px 0;">
             <div id="jog-wheel">
                 <div id="jog-indicator"></div>
             </div>
