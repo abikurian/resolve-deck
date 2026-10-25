@@ -1,12 +1,8 @@
-import io
 import time
 import asyncio
-import cv2
-import mss
-import numpy as np
 import pyautogui
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse
 
 # Disable PyAutoGUI delay for instantaneous jog wheel responsiveness
 pyautogui.PAUSE = 0.0
@@ -14,42 +10,10 @@ pyautogui.PAUSE = 0.0
 # Multi-Page Interface State ("edit" or "color")
 current_page = "edit"
 
-# Calibrated screen capture regions for Edit and Color pages
-bbox_edit = {"top": 121, "left": 1141, "width": 264, "height": 338}
-bbox_color = {"top": 121, "left": 1141, "width": 264, "height": 338}
-
 app = FastAPI()
 
 # -------------------------------------------------------------
-# 1. SCREEN CAPTURE & SCOPE STREAM CONFIG
-# -------------------------------------------------------------
-sct = mss.mss()
-
-def get_scope_frame():
-    global current_page
-    capture_bbox = bbox_edit if current_page == "edit" else bbox_color
-    img = np.array(sct.grab(capture_bbox))
-    frame = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
-
-    # Compress and stream
-    frame = cv2.resize(frame, (854, 480))
-    _, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
-    return jpeg.tobytes()
-
-def generate_video_stream():
-    while True:
-        frame_bytes = get_scope_frame()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-        time.sleep(0.033)  # ~30 FPS throttle
-
-@app.get("/stream")
-def video_feed():
-    return StreamingResponse(generate_video_stream(), 
-                             media_type="multipart/x-mixed-replace; boundary=frame")
-
-# -------------------------------------------------------------
-# 2. WEBSOCKET CONTROLLER PIPELINE (Phone -> PC)
+# 1. WEBSOCKET CONTROLLER PIPELINE (Phone -> PC)
 # -------------------------------------------------------------
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -120,18 +84,22 @@ async def websocket_endpoint(websocket: WebSocket):
 
             # --- WORKSPACE PAGE SWITCHING ---
             elif action == "page_edit":
-                pyautogui.hotkey("shift", "4")
+                pyautogui.keyDown('shift')
+                pyautogui.press('4')
+                pyautogui.keyUp('shift')
                 current_page = "edit"
 
             elif action == "page_color":
-                pyautogui.hotkey("shift", "6")
+                pyautogui.keyDown('shift')
+                pyautogui.press('6')
+                pyautogui.keyUp('shift')
                 current_page = "color"
 
     except WebSocketDisconnect:
         print("Phone controller disconnected.")
 
 # -------------------------------------------------------------
-# 3. EMBEDDED CONTROLLER MOBILE UI
+# 2. EMBEDDED CONTROLLER MOBILE UI
 # -------------------------------------------------------------
 @app.get("/")
 def get_ui():

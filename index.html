@@ -18,15 +18,16 @@
             background: #4a4c52;
             color: #e1e7ec;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            min-height: 100vh;
         }
 
         header {
             background: #2b2d31;
-            padding: 10px 16px;
+            padding: 12px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -37,7 +38,7 @@
 
         .header-title {
             font-weight: 800;
-            font-size: 12px;
+            font-size: 13px;
             letter-spacing: 0.8px;
             color: #e2e8f0;
             text-transform: uppercase;
@@ -57,25 +58,12 @@
             box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
         }
 
-        /* Top: Video Stream & Scopes */
-        #monitor-panel {
-            width: 100%;
-            height: 38%;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-bottom: 3px solid #202225;
-            flex-shrink: 0;
-        }
-
         #custom-deck {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
             padding: 15px;
-            overflow-y: auto;
             background: radial-gradient(circle at 50% 20%, #52545c 0%, #44464c 100%);
             box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.4);
         }
@@ -128,8 +116,8 @@
 
         /* Blackmagic Jog Wheel */
         #jog-wheel {
-            width: 140px;
-            height: 140px;
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
             background: #171717;
             border: 4px solid #282a2e;
@@ -147,15 +135,15 @@
         }
 
         #jog-indicator {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             background: #121315;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7), 0 1px 1px rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(0, 0, 0, 0.6);
             position: absolute;
             top: 14px;
-            left: calc(50% - 9px);
+            left: calc(50% - 10px);
             pointer-events: none;
         }
 
@@ -173,24 +161,19 @@
     <header>
         <span class="header-title">DaVinci Resolve Deck</span>
         <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 10px; color: #9ca3af; text-transform: uppercase; font-weight: 700;">Live Feed</span>
+            <span style="font-size: 10px; color: #9ca3af; text-transform: uppercase; font-weight: 700;">Deck</span>
             <span id="dot" class="status-dot"></span>
         </div>
     </header>
 
-    <!-- Live Scope / Preview Feed -->
-    <div id="monitor-panel">
-        <img id="stream-img" src="/stream" alt="Resolve Preview / Scopes" style="width: 100%; height: 100%; object-fit: contain;">
-    </div>
-
     <!-- Page Navigation Row -->
-    <div class="page-nav" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px 15px 0 15px;">
+    <div class="page-nav" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px 15px 0 15px; background: radial-gradient(circle at 50% 0%, #52545c 0%, #4a4c52 100%);">
         <button class="key key-dark" style="min-height: 48px; font-size: 12px; font-weight: 800;" onclick="sendAction('page_edit')">EDIT PAGE</button>
         <button class="key key-dark" style="min-height: 48px; font-size: 12px; font-weight: 800;" onclick="sendAction('page_color')">COLOR PAGE</button>
     </div>
 
     <!-- Advanced Custom Deck -->
-    <div id="custom-deck" style="display: flex; flex-direction: column; gap: 15px; padding: 15px;">
+    <div id="custom-deck">
         <!-- Row 1: Nodes & View -->
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
             <button class="key key-dark" onclick="sendAction('add_serial')">SERIAL NODE</button>
@@ -216,11 +199,11 @@
         </div>
 
         <!-- Row 4: Transport Core -->
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 5px 0;">
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 10px 0;">
             <div id="jog-wheel">
                 <div id="jog-indicator"></div>
             </div>
-            <button class="key key-dark" style="min-width: 160px; min-height: 50px; font-size: 12px; font-weight: 800;" onclick="sendAction('play_pause')">PLAY / STOP</button>
+            <button class="key key-dark" style="min-width: 170px; min-height: 52px; font-size: 13px; font-weight: 800;" onclick="sendAction('play_pause')">PLAY / STOP</button>
         </div>
     </div>
 
@@ -281,7 +264,7 @@
 
             rotation += delta;
             indicator.style.transform = `rotate(${rotation}deg)`;
-            indicator.style.transformOrigin = `50% 56px`;
+            indicator.style.transformOrigin = `50% 61px`;
 
             // Trigger frame step every 12 degrees of rotation
             if (Math.abs(delta) > 12) {
