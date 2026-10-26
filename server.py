@@ -52,10 +52,10 @@ async def websocket_endpoint(websocket: WebSocket):
                         keyboard.send('n')
 
                     elif action == "zoom_in":
-                        keyboard.send('ctrl+=')
+                        pyautogui.hotkey('ctrl', '=')
 
                     elif action == "zoom_out":
-                        keyboard.send('ctrl+minus')
+                        pyautogui.hotkey('ctrl', '-')
 
                     elif action == "fullscreen":
                         keyboard.send('ctrl+f')
