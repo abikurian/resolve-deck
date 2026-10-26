@@ -55,7 +55,16 @@ async def websocket_endpoint(websocket: WebSocket):
                         keyboard.send('ctrl+=')
 
                     elif action == "zoom_out":
-                        keyboard.send('ctrl+-')
+                        keyboard.send('ctrl+minus')
+
+                    elif action == "fullscreen":
+                        keyboard.send('ctrl+f')
+
+                    elif action == "zoom_fit":
+                        keyboard.send('shift+z')
+
+                    elif action == "marker":
+                        keyboard.send('m')
 
                     # --- JOG / SHUTTLE WHEEL ---
                     elif action == "jog":
