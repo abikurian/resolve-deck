@@ -147,6 +147,31 @@
             pointer-events: none;
         }
 
+        /* High-Sensitivity Top Trackpad Surface */
+        #trackpad {
+            height: 250px;
+            margin: 15px 15px 0 15px;
+            background: #1a1c20;
+            border: 1px solid #35383d;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #9ca3af;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            touch-action: none;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+
+        #trackpad:active {
+            background: #1e2025;
+            border-color: #4f535a;
+        }
+
         @media (max-width: 600px) {
             .key {
                 font-size: 9px;
@@ -166,15 +191,16 @@
         </div>
     </header>
 
-    <!-- Page Navigation Row -->
-    <div class="page-nav" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px 15px 0 15px; background: radial-gradient(circle at 50% 0%, #52545c 0%, #4a4c52 100%);">
-        <button class="key key-dark" style="min-height: 48px; font-size: 12px; font-weight: 800;" onclick="sendAction('page_edit')">EDIT PAGE</button>
-        <button class="key key-dark" style="min-height: 48px; font-size: 12px; font-weight: 800;" onclick="sendAction('page_color')">COLOR PAGE</button>
-    </div>
+    <!-- Top Trackpad Surface -->
+    <div id="trackpad">TRACKPAD (TAP TO CLICK)</div>
 
     <!-- Advanced Custom Deck -->
     <div id="custom-deck">
-        <div id="trackpad" style="width: 100%; height: 180px; background: #1a1c20; border: 1px solid #35383d; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: #9ca3af; font-family: sans-serif; font-size: 12px; margin-bottom: 15px; touch-action: none;">TRACKPAD (TAP TO CLICK)</div>
+        <!-- Page Navigation Row -->
+        <div class="page-nav" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button class="key key-dark" style="min-height: 48px; font-size: 12px; font-weight: 800;" onclick="sendAction('page_edit')">EDIT PAGE</button>
+            <button class="key key-dark" style="min-height: 48px; font-size: 12px; font-weight: 800;" onclick="sendAction('page_color')">COLOR PAGE</button>
+        </div>
 
         <!-- Row: Edit Tools & Zoom -->
         <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
