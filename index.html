@@ -278,9 +278,9 @@
             }
         }
 
-        function sendAction(act) {
-            if (navigator.vibrate) navigator.vibrate(20);
-            send({ action: act });
+        function sendAction(action) {
+            if (navigator.vibrate) navigator.vibrate(15);
+            send({ action: action });
         }
 
         // -------------------------------------------------------------
@@ -290,8 +290,10 @@
         let trackpadLastX = 0;
         let trackpadLastY = 0;
         let trackpadTotalDist = 0;
+        let trackpadTouchCount = 0;
 
         trackpad.addEventListener("touchstart", (e) => {
+            trackpadTouchCount = e.touches.length;
             if (e.touches.length > 0) {
                 trackpadLastX = e.touches[0].clientX;
                 trackpadLastY = e.touches[0].clientY;
@@ -301,7 +303,17 @@
 
         trackpad.addEventListener("touchmove", (e) => {
             e.preventDefault();
-            if (e.touches.length > 0) {
+            if (e.touches.length === 2) {
+                const curY = e.touches[0].clientY;
+                const dy = curY - trackpadLastY;
+                trackpadTotalDist += Math.abs(dy);
+                trackpadLastY = curY;
+                trackpadLastX = e.touches[0].clientX;
+
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send('scroll:' + dy);
+                }
+            } else if (e.touches.length === 1) {
                 const curX = e.touches[0].clientX;
                 const curY = e.touches[0].clientY;
                 const dx = curX - trackpadLastX;
@@ -316,11 +328,18 @@
             }
         }, { passive: false });
 
-        trackpad.addEventListener("touchend", () => {
+        trackpad.addEventListener("touchend", (e) => {
             if (trackpadTotalDist < 3) {
                 if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.send('click');
+                    if (trackpadTouchCount === 2) {
+                        ws.send('right_click');
+                    } else if (trackpadTouchCount === 3) {
+                        ws.send('middle_click');
+                    } else {
+                        ws.send('click');
+                    }
                 }
+                trackpadTotalDist = 999;
             }
         });
 
@@ -365,6 +384,7 @@
             if (delta < -180) delta += 360;
 
             if (Math.abs(delta) > 5) {
+                if (navigator.vibrate) navigator.vibrate(10);
                 sendAction(delta > 0 ? "jog_fwd" : "jog_rev");
                 prevAngle = curAngle;
             }

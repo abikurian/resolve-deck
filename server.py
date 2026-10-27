@@ -38,9 +38,19 @@ async def websocket_endpoint(websocket: WebSocket):
                     if cmd == "mouse":
                         dx, dy = map(float, data.split(","))
                         pyautogui.move(dx * 1.5, dy * 1.5)  # 1.5x sensitivity multiplier
+                    elif cmd == "scroll":
+                        dy = float(data)
+                        # Multiply by a sensitivity factor, reverse direction if needed for natural scrolling
+                        pyautogui.scroll(int(dy * -2))
                 else:
                     if action == "click":
                         pyautogui.click()
+
+                    elif action == "right_click":
+                        pyautogui.rightClick()
+
+                    elif action == "middle_click":
+                        pyautogui.middleClick()
 
                     elif action == "tool_arrow":
                         keyboard.send('a')
