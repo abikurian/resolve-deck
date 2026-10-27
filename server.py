@@ -1,3 +1,4 @@
+import ctypes
 import time
 import asyncio
 import json
@@ -37,7 +38,10 @@ async def websocket_endpoint(websocket: WebSocket):
                     cmd, data = action.split(":", 1)
                     if cmd == "mouse":
                         dx, dy = map(float, data.split(","))
-                        pyautogui.move(dx * 1.5, dy * 1.5)  # 1.5x sensitivity multiplier
+                        # Multiply by sensitivity and convert to integers for the C function
+                        move_x = int(dx * 1.8)
+                        move_y = int(dy * 1.8)
+                        ctypes.windll.user32.mouse_event(0x0001, move_x, move_y, 0, 0)
                     elif cmd == "scroll":
                         dy = float(data)
                         # Multiply by a sensitivity factor, reverse direction if needed for natural scrolling
