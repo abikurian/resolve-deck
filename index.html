@@ -18,11 +18,13 @@
             background: #4a4c52;
             color: #e1e7ec;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            overflow-x: hidden;
-            overflow-y: auto;
+            height: 100vh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            justify-content: space-between;
+            padding-bottom: 20px;
+            box-sizing: border-box;
         }
 
         header {
@@ -62,7 +64,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 8px;
             padding: 15px;
             background: radial-gradient(circle at 50% 20%, #52545c 0%, #44464c 100%);
             box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.4);
@@ -149,8 +151,9 @@
 
         /* High-Sensitivity Top Trackpad Surface */
         #trackpad {
-            height: 250px;
-            margin: 15px 15px 0 15px;
+            flex: 1;
+            min-height: 100px;
+            margin: 15px 15px 10px 15px;
             background: #1a1c20;
             border: 1px solid #35383d;
             border-radius: 8px;
@@ -163,7 +166,6 @@
             letter-spacing: 0.5px;
             touch-action: none;
             box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
-            flex-shrink: 0;
             transition: border-color 0.15s, background-color 0.15s;
         }
 
@@ -243,6 +245,14 @@
             <button class="key key-red" onclick="sendAction('ripple_del')">RIPPLE DEL</button>
         </div>
 
+        <!-- Row: Clip Move & Save -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+            <button class="key key-dark" onclick="sendAction('save')">SAVE</button>
+            <button id="btn-jog-mode" class="key key-dark" onclick="toggleJogMode()">JOG: TIMELINE</button>
+            <button class="key key-dark" onclick="sendAction('clip_up')">CLIP UP</button>
+            <button class="key key-dark" onclick="sendAction('clip_down')">CLIP DOWN</button>
+        </div>
+
         <!-- Row 4: Transport Core -->
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 10px 0;">
             <div id="jog-wheel">
@@ -253,6 +263,14 @@
     </div>
 
     <script>
+        let jogMode = 'timeline';
+
+        function toggleJogMode() {
+            jogMode = jogMode === 'timeline' ? 'move' : 'timeline';
+            document.getElementById('btn-jog-mode').innerText = jogMode === 'timeline' ? 'JOG: TIMELINE' : 'JOG: MOVE CLIP';
+            if (navigator.vibrate) navigator.vibrate(15);
+        }
+
         // -------------------------------------------------------------
         // WEBSOCKET HANDSHAKE
         // -------------------------------------------------------------
@@ -385,7 +403,11 @@
 
             if (Math.abs(delta) > 5) {
                 if (navigator.vibrate) navigator.vibrate(10);
-                sendAction(delta > 0 ? "jog_fwd" : "jog_rev");
+                if (delta > 0) {
+                    sendAction(jogMode === 'timeline' ? 'jog_fwd' : 'nudge_right');
+                } else {
+                    sendAction(jogMode === 'timeline' ? 'jog_rev' : 'nudge_left');
+                }
                 prevAngle = curAngle;
             }
         });

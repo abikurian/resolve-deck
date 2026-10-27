@@ -52,6 +52,21 @@ async def websocket_endpoint(websocket: WebSocket):
                     elif action == "middle_click":
                         pyautogui.middleClick()
 
+                    elif action == "save":
+                        keyboard.send('ctrl+s')
+
+                    elif action == "nudge_left":
+                        keyboard.send(',')
+
+                    elif action == "nudge_right":
+                        keyboard.send('.')
+
+                    elif action == "clip_up":
+                        keyboard.send('alt+up')
+
+                    elif action == "clip_down":
+                        keyboard.send('alt+down')
+
                     elif action == "tool_arrow":
                         keyboard.send('a')
 
