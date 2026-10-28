@@ -72,6 +72,7 @@
         }
 
         /* Mechanical Tactile Keycap Design */
+        button,
         .key {
             border-radius: 4px;
             box-shadow: 0 4px 0 #1e2024, 0 5px 10px rgba(0, 0, 0, 0.5);
@@ -84,7 +85,7 @@
             align-items: center;
             text-transform: uppercase;
             cursor: pointer;
-            transition: transform 0.05s, box-shadow 0.05s;
+            transition: transform 0.1s, background-color 0.1s;
             padding: 8px 6px;
             min-height: 44px;
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -93,10 +94,12 @@
             line-height: 1.2;
         }
 
-        .key:active,
-        .key.active {
-            transform: translateY(4px);
-            box-shadow: 0 0 0 #1e2024, 0 1px 3px rgba(0, 0, 0, 0.5);
+        button:active,
+        .key:active {
+            transform: scale(0.92);
+            background-color: #3b82f6; /* Highlight color */
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            transition: transform 0.05s, background-color 0.05s;
         }
 
         /* Color Variants */
@@ -109,12 +112,6 @@
             background: #8b2629;
             color: #f87171;
             box-shadow: 0 4px 0 #581618, 0 5px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .key-red:active,
-        .key-red.active {
-            transform: translateY(4px);
-            box-shadow: 0 0 0 #581618, 0 1px 3px rgba(0, 0, 0, 0.5);
         }
 
         /* Blackmagic Jog Wheel */
@@ -194,6 +191,11 @@
             <span id="dot" class="status-dot"></span>
         </div>
     </header>
+
+    <div id="status-bar" style="display: flex; justify-content: center; align-items: center; gap: 8px; padding: 5px; color: #9ca3af; font-family: sans-serif; font-size: 12px; margin-bottom: 5px;">
+        <div id="status-dot" style="width: 10px; height: 10px; border-radius: 50%; background-color: #ef4444; box-shadow: 0 0 8px #ef4444;"></div>
+        <span id="status-text">DISCONNECTED</span>
+    </div>
 
     <!-- Top Trackpad Surface -->
     <div id="trackpad">TRACKPAD (TAP TO CLICK)</div>
@@ -280,10 +282,24 @@
         let ws;
         function connect() {
             ws = new WebSocket(`ws://${location.host}/ws`);
-            ws.onopen = () => dot.classList.add("connected");
-            ws.onclose = () => {
-                dot.classList.remove("connected");
+            ws.onopen = function() {
+                if (dot) dot.classList.add("connected");
+                document.getElementById('status-dot').style.backgroundColor = '#22c55e';
+                document.getElementById('status-dot').style.boxShadow = '0 0 8px #22c55e';
+                document.getElementById('status-text').innerText = 'LINK ACTIVE';
+            };
+            ws.onclose = function() {
+                if (dot) dot.classList.remove("connected");
+                document.getElementById('status-dot').style.backgroundColor = '#ef4444';
+                document.getElementById('status-dot').style.boxShadow = '0 0 8px #ef4444';
+                document.getElementById('status-text').innerText = 'DISCONNECTED';
                 setTimeout(connect, 2000);
+            };
+            ws.onerror = function() {
+                if (dot) dot.classList.remove("connected");
+                document.getElementById('status-dot').style.backgroundColor = '#ef4444';
+                document.getElementById('status-dot').style.boxShadow = '0 0 8px #ef4444';
+                document.getElementById('status-text').innerText = 'DISCONNECTED';
             };
         }
         connect();
